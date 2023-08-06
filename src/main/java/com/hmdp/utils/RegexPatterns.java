@@ -1,6 +1,7 @@
 package com.hmdp.utils;
 
 /**
+ * //封装为抽象类的正则表达式
  * @author 虎哥
  */
 public abstract class RegexPatterns {

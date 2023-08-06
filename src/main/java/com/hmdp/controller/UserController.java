@@ -91,7 +91,7 @@ public class UserController {
         if (user == null) {
             return Result.ok();
         }
-        UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
+        UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);//快速拷贝属性的工具类
         // 返回
         return Result.ok(userDTO);
     }

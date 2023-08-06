@@ -1,5 +1,8 @@
 package com.hmdp;
 
+import cn.hutool.json.JSON;
+import cn.hutool.json.JSONObject;
+import com.fasterxml.jackson.core.JsonParser;
 import com.hmdp.entity.Shop;
 import com.hmdp.service.impl.ShopServiceImpl;
 import com.hmdp.utils.CacheClient;
@@ -66,6 +69,17 @@ class HmDianPingApplicationTests {
         cacheClient.setWithLogicalExpire(CACHE_SHOP_KEY + 1L, shop, 10L, TimeUnit.SECONDS);
     }
 
+    @Test
+    void testThread(){
+        Runnable run=()->{
+            for (int i = 0; i < 100; i++) {
+                System.out.println(i+" gg");
+            }
+        };
+        for (int i = 0; i < 300; i++) {
+            es.submit(run);
+        }
+    }
     @Test
     void loadShopData() {
         // 1.查询店铺信息

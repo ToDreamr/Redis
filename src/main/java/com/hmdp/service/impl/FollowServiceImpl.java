@@ -53,6 +53,7 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
             }
         } else {
             // 3.取关，删除 delete from tb_follow where user_id = ? and follow_user_id = ?
+            //sql语句含有两个关联参数:一个是博主ID,一个是粉丝ID,两个变量在设计表的时候需要 考虑到位
             boolean isSuccess = remove(new QueryWrapper<Follow>()
                     .eq("user_id", userId).eq("follow_user_id", followUserId));
             if (isSuccess) {
@@ -79,6 +80,7 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
         Long userId = UserHolder.getUser().getId();
         String key = "follows:" + userId;
         // 2.求交集
+        //体现redis的优点的时候到了，直接取交集即可
         String key2 = "follows:" + id;
         Set<String> intersect = stringRedisTemplate.opsForSet().intersect(key, key2);
         if (intersect == null || intersect.isEmpty()) {

@@ -1,0 +1,31 @@
+@Override
+    public Result seckillVoucher(Long voucherId) {
+       /* // 1.执行lua脚本
+        Long result = stringRedisTemplate.execute(
+                SECKILL_SCRIPT,
+                Collections.emptyList(),
+                voucherId.toString(), userId.toString(), String.valueOf(orderId)
+        );
+        int r = result.intValue();
+        // 2.判断结果是否为0
+        if (r != 0) {
+            // 2.1.不为0 ，代表没有购买资格
+            return Result.fail(r == 1 ? "库存不足" : "不能重复下单");
+        }
+        // 3.获取代理对象
+        proxy = (IVoucherOrderService) AopContext.currentProxy();
+        // 4.返回订单id
+        return Result.ok(orderId);*/
+        //1:判断库存是否充足
+        if (seckillVoucherService.getById(voucherId).getStock() < 1) {
+            return Result.fail("库存不足，不足以参加秒杀");
+        }
+        //由于spring管理了事务
+        Long userId = UserHolder.getUser().getId();
+        synchronized (userId.toString().intern()) {
+            //拿到事务代理对象，锁需要包裹事务
+            IVoucherOrderService proxy = (IVoucherOrderService) AopContext.currentProxy();
+            return proxy.CREATE(voucherId);//非代理对象，事务将会失效
+            //创建到实现类里面，才可以使用代理方法
+        }
+    }

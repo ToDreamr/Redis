@@ -34,6 +34,7 @@ public class RegexUtils {
 
     // 校验是否不符合正则格式
     private static boolean mismatch(String str, String regex){
+        //若为空，则肯定不符合
         if (StrUtil.isBlank(str)) {
             return true;
         }

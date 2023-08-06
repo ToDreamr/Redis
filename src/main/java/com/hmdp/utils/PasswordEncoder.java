@@ -2,11 +2,14 @@ package com.hmdp.utils;
 
 
 import cn.hutool.core.util.RandomUtil;
+import org.springframework.stereotype.Component;
 import org.springframework.util.DigestUtils;
 
 import java.nio.charset.StandardCharsets;
-
 public class PasswordEncoder {
+
+    public PasswordEncoder() {
+    }
 
     public static String encode(String password) {
         // 生成盐
@@ -14,6 +17,8 @@ public class PasswordEncoder {
         // 加密
         return encode(password,salt);
     }
+
+    //封装到本类的加密方法
     private static String encode(String password, String salt) {
         // 加密
         return salt + "@" + DigestUtils.md5DigestAsHex((password + salt).getBytes(StandardCharsets.UTF_8));

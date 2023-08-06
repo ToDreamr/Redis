@@ -8,6 +8,7 @@ import com.hmdp.entity.VoucherOrder;
 import com.hmdp.mapper.VoucherOrderMapper;
 import com.hmdp.service.ISeckillVoucherService;
 import com.hmdp.service.IVoucherOrderService;
+import com.hmdp.utils.ILockImpl;
 import com.hmdp.utils.RedisIdWorker;
 import com.hmdp.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -67,7 +67,8 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     @PostConstruct
     private void init(){
         // TODO 需要秒杀下单功能的同学自己解开下面的注释
-        SECKILL_ORDER_EXECUTOR.submit(new VoucherOrderHandler());
+
+//        SECKILL_ORDER_EXECUTOR.submit(new VoucherOrderHandler());
     }
 
     private class VoucherOrderHandler implements Runnable{
@@ -146,7 +147,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
                     // 4.确认消息 XACK stream.orders g1 id
                     stringRedisTemplate.opsForStream().acknowledge(queueName, "g1", record.getId());
                 } catch (Exception e) {
-                    log.error("处理订单异常", e);
+                    log.error("处理订单异常!!!", e);
                 }
             }
         }
@@ -177,27 +178,79 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     IVoucherOrderService proxy;
     @Override
     public Result seckillVoucher(Long voucherId) {
+//        return withNoRedisLock(voucherId);//非分布式锁实现
+        return RedisLock(voucherId);
+    }
+
+    private Result withNoRedisLock(Long voucherId) {
+        //1:判断库存是否充足
+        if (seckillVoucherService.getById(voucherId).getStock() < 1) {
+            return Result.fail("库存不足，不足以参加秒杀");
+        }
+        //由于spring管理了事务
+        Long userId = UserHolder.getUser().getId();
+        synchronized (userId.toString().intern()) {
+            //拿到事务代理对象，锁需要包裹事务
+            IVoucherOrderService proxy = (IVoucherOrderService) AopContext.currentProxy();
+            return proxy.CREATE(voucherId);
+            //创建到实现类里面，才可以使用代理方法
+        }
+    }
+
+    private Result RedisLock(Long voucherId) {
+        //1:判断库存是否充足
+        if (seckillVoucherService.getById(voucherId).getStock() < 1) {
+            return Result.fail("库存不足，不足以参加秒杀");
+        }
+        //由于spring管理了事务
+        Long userId = UserHolder.getUser().getId();
+        //创建锁对象
+        ILockImpl lock = new ILockImpl(stringRedisTemplate, "order:" + userId);
+        //获取锁
+        boolean isLock = lock.tryLock(1200);
+        //建议写反逻辑
+        if (!isLock){
+            //获取错误，非法请求
+            log.error("非法重复下单");
+             return Result.fail("用户重复下单");
+        }
+        try {
+            IVoucherOrderService proxy = (IVoucherOrderService) AopContext.currentProxy();
+            return proxy.CREATE(voucherId);
+        }finally {
+            lock.unlock();
+        }
+    }
+
+    @Transactional//事务将会失效，对函数加事务，而不是代理对象
+    public Result CREATE(Long voucherId) {
+
         Long userId = UserHolder.getUser().getId();
         long orderId = redisIdWorker.nextId("order");
-        // 1.执行lua脚本
-        Long result = stringRedisTemplate.execute(
-                SECKILL_SCRIPT,
-                Collections.emptyList(),
-                voucherId.toString(), userId.toString(), String.valueOf(orderId)
-        );
-        int r = result.intValue();
-        // 2.判断结果是否为0
-        if (r != 0) {
-            // 2.1.不为0 ，代表没有购买资格
-            return Result.fail(r == 1 ? "库存不足" : "不能重复下单");
+        //ctrl+q 显示方法说明
+        //内部加锁，先释放锁才会提交事务，当锁释放，还没提交，其他线程进入，同样出现并发问题
+        //2:实现一人一单,判断是否存在，不能判断是否发生变化，需要用悲观锁对业务逻辑进行封装
+        int count = query().eq("user_id", userId).eq("voucher_id", voucherId).count();
+        if (count > 0) {
+            return Result.fail("用户已经下单过，不可重复下单");
         }
-        // 3.获取代理对象
-        proxy = (IVoucherOrderService) AopContext.currentProxy();
-        // 4.返回订单id
+        //3执行库存扣减操作
+        boolean success = seckillVoucherService.update().setSql("stock=stock-1").gt("stock", 0).eq("voucher_id", voucherId).update();//只需要库存大于0
+        if (!success) {
+            return Result.fail("库存不足，不足以参加渺少活动");
+        }
+
+        //4:创建订单
+        VoucherOrder voucherOrder = new VoucherOrder();
+        voucherOrder.setVoucherId(orderId);
+        voucherOrder.setUserId(userId);
+        voucherOrder.setVoucherId(voucherId);
+        save(voucherOrder);
         return Result.ok(orderId);
     }
 
     @Transactional
+    //操作两张表，建议添加事务
     public void createVoucherOrder(VoucherOrder voucherOrder) {
         // 5.一人一单
         Long userId = voucherOrder.getUserId();
@@ -214,7 +267,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         // 6.扣减库存
         boolean success = seckillVoucherService.update()
                 .setSql("stock = stock - 1") // set stock = stock - 1
-                .eq("voucher_id", voucherOrder.getVoucherId()).gt("stock", 0) // where id = ? and stock > 0
+                .eq("voucher_id", voucherOrder.getVoucherId()).gt("stock", 0)// where id = ? and stock > 0
                 .update();
         if (!success) {
             // 扣减失败

@@ -14,6 +14,7 @@ import com.hmdp.service.IUserService;
 import com.hmdp.utils.RegexUtils;
 import com.hmdp.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.data.redis.connection.BitFieldSubCommands;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -68,6 +69,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public Result login(LoginFormDTO loginForm, HttpSession session) {
         // 1.校验手机号
         String phone = loginForm.getPhone();
+
+        //快捷键：val+值实现值的传递
+        //校验验证码：
+        Object sessionCode=session.getAttribute("code");//通过session获取验证码
+
         if (RegexUtils.isPhoneInvalid(phone)) {
             // 2.如果不符合，返回错误信息
             return Result.fail("手机号格式错误！");
@@ -75,35 +81,44 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         // 3.从redis获取验证码并校验
         String cacheCode = stringRedisTemplate.opsForValue().get(LOGIN_CODE_KEY + phone);
         String code = loginForm.getCode();
+        //String类型，直接使用equals方法来判断
         if (cacheCode == null || !cacheCode.equals(code)) {
             // 不一致，报错
             return Result.fail("验证码错误");
         }
 
         // 4.一致，根据手机号查询用户 select * from tb_user where phone = ?
-        User user = query().eq("phone", phone).one();
+        User user = query().eq("phone", phone).one();//通过mybatisplus的query来实现获取手机号。没有学习的学习点
 
         // 5.判断用户是否存在
         if (user == null) {
             // 6.不存在，创建新用户并保存
-            user = createUserWithPhone(phone);
+            user = createUserWithPhone(phone);//关键的地方是手机号，其他的可以按照用户习惯之后再实现
         }
+        //确保用户一定是存在的！！！
+        User user1=new User();
+        user1.setNickName("user_xx"+RandomUtil.randomString(5));//
 
         // 7.保存用户信息到 redis中
         // 7.1.随机生成token，作为登录令牌
         String token = UUID.randomUUID().toString(true);
         // 7.2.将User对象转为HashMap存储
-        UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
+        UserDTO userDTO=BeanUtil.copyProperties(user, UserDTO.class);
+        //只需要存储一些关键信息到session，减小session的内存压力,而不是将很多信息存到session里面,
+        // 主要是关于粒度的问题
+        //转换属性信息
+        //自定义转换
         Map<String, Object> userMap = BeanUtil.beanToMap(userDTO, new HashMap<>(),
                 CopyOptions.create()
-                        .setIgnoreNullValue(true)
-                        .setFieldValueEditor((fieldName, fieldValue) -> fieldValue.toString()));
-        // 7.3.存储
+                        .setIgnoreNullValue(true)//忽略空的值
+                        .setFieldValueEditor((fieldName, fieldValue) -> fieldValue.toString()));//修改字段值，将Long转换为String
+        //  7.3.存储
         String tokenKey = LOGIN_USER_KEY + token;
         stringRedisTemplate.opsForHash().putAll(tokenKey, userMap);
         // 7.4.设置token有效期
         stringRedisTemplate.expire(tokenKey, LOGIN_USER_TTL, TimeUnit.MINUTES);
 
+        //需要添加更新token有效期的问题
         // 8.返回token
         return Result.ok(token);
     }

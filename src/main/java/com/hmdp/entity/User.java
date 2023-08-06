@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
@@ -40,6 +41,7 @@ public class User implements Serializable {
     /**
      * 密码，加密存储
      */
+
     private String password;
 
     /**

@@ -28,6 +28,7 @@ public class BlogController {
     private IBlogService blogService;
 
     @PostMapping
+    //传入数据格式为:type/json
     public Result saveBlog(@RequestBody Blog blog) {
         return blogService.saveBlog(blog);
     }
@@ -38,6 +39,7 @@ public class BlogController {
     }
 
     @GetMapping("/of/me")
+    //@RequestParam()注解默认必须携带参数，所以这里添加默认值，防止出现错误
     public Result queryMyBlog(@RequestParam(value = "current", defaultValue = "1") Integer current) {
         // 获取登录用户
         UserDTO user = UserHolder.getUser();
