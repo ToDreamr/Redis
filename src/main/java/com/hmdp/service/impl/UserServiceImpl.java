@@ -26,6 +26,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static com.hmdp.utils.RedisConstants.*;
@@ -95,9 +96,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             // 6.不存在，创建新用户并保存
             user = createUserWithPhone(phone);//关键的地方是手机号，其他的可以按照用户习惯之后再实现
         }
-        //确保用户一定是存在的！！！
-        User user1=new User();
-        user1.setNickName("user_xx"+RandomUtil.randomString(5));//
 
         // 7.保存用户信息到 redis中
         // 7.1.随机生成token，作为登录令牌

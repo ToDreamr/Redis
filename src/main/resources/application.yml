@@ -36,4 +36,4 @@ logging:
     path: D:\JavaWork\hm-dianping\log
     max-history: 2
     max-size: 1024KB
-
+    clean-history-on-start: true

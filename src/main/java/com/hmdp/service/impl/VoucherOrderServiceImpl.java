@@ -179,7 +179,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     @Override
     public Result seckillVoucher(Long voucherId) {
 //        return withNoRedisLock(voucherId);//非分布式锁实现
-        return RedisLock(voucherId);
+        return RedisLock(voucherId);//基于Redis的分布式锁来实现业务
     }
 
     private Result withNoRedisLock(Long voucherId) {
