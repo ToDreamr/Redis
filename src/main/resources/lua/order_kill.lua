@@ -11,11 +11,14 @@ if(tonumber(redis.call('get',stock))<=0) then
     return 1
 end
 
-if(redis.call('sismember',order,userId)==1) then
-    return 2;
+if(tonumber(redis.call('get',order))<=0) then
+
+    if(redis.call('sismember',order,userId)==1) then
+        return 2;
+    end
+
+    redis.call('incrby', stock ,-1 )
+    redis.call('sadd', order,userId)
+    return 0;
 end
-
-redis.call('incrby', stock ,-1 )
-redis.call('sadd', order,userId)
-
-return 0;
+return 2;
