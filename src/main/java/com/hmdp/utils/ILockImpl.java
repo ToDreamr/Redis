@@ -67,4 +67,6 @@ public class ILockImpl implements ILock{
         //调用lua脚本
         stringRedisTemplate.execute(UNLOCK_SCRIPT, Collections.singletonList(KEY_PREFIX+name),ID_PREFIX+Thread.currentThread().getId());
     }
+
+
 }
