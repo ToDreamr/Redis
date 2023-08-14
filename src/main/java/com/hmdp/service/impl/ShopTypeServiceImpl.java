@@ -41,15 +41,15 @@ public class ShopTypeServiceImpl extends ServiceImpl<ShopTypeMapper, ShopType> i
             //手动序列化和反序列化
             LambdaQueryWrapper<ShopType> queryWrapper = new LambdaQueryWrapper<>();
             log.info("请求打到数据库上面");
-            var shopTypeList = typeMapper.selectList(queryWrapper);
+            Object shopTypeList = typeMapper.selectList(queryWrapper);
             String json=mapper.writeValueAsString(shopTypeList);//转化为json对象,writeValueAsString把值的形式写成String类型
             stringRedisTemplate.opsForValue().set("type",json,2L, TimeUnit.MINUTES);//调用stringRedisTemplate把值写成json对象
            //反序列化
             String  readJson=stringRedisTemplate.opsForValue().get("type");
-            var type=mapper.readValue(readJson,List.class);
+            List type=mapper.readValue(readJson,List.class);
             return Result.ok(type);
         }
-        var res = mapper.readValue(typeList, List.class);
+        List res = mapper.readValue(typeList, List.class);
         return Result.ok(res);
     }
 }

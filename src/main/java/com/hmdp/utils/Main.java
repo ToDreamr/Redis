@@ -1,8 +1,13 @@
 package com.hmdp.utils;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -14,28 +19,17 @@ public class Main {
     private static final ExecutorService theadPool= Executors.newFixedThreadPool(10);
 
     private static final ReentrantLock lock=new ReentrantLock();
-    private static int sum=0;
-    public static void main(String[] args) {
+    public static void main(String[] args) throws URISyntaxException, IOException {
 
-        Runnable task=()->{
-            lock.lock();
-            synchronized (lock){
-                for (int i = 0; i < 10; i++) {
-                    sum+=i;
-                }
-            }
-//            lock.unlock();
-        };
-        Runnable task2=()->{
-            synchronized (lock){
-                for (int i = 0; i < 10; i++) {
-                    sum+=i;
-                }
-            }
-//            lock.unlock();
-        };
-        task.run();
-        task2.run();
-        System.out.println(sum);
+        URL url=new URL("https://www.baidu.com/");
+
+        InputStream inputStream = url.openStream();
+        BufferedInputStream bufferedInputStream=new BufferedInputStream(inputStream);
+
+        byte[] bytes=new byte[bufferedInputStream.available()];
+        PrintStream printStream=new PrintStream(System.out);
+        while ((inputStream.read(bytes)!=-1)){
+            printStream.write(bytes);
+        }
     }
 }

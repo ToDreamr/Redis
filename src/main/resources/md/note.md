@@ -308,3 +308,51 @@ OK
 将下单信息添加到阻塞队列里面
 
 ![img_33.png](img_33.png)
+
+### Windows相关命令：
+> 查找并记录需要杀死的进程号码： netstat -ano
+> 
+> 查找端口：netstat -ano|findstr [Port]
+> 
+> 查找名称：tasklist |findstr [PID]
+> 
+> 杀死进程： taskkill -f -pid [PID]
+
+## 消息队列【Message Queue】:【RabbitMq Kafka RedisQ】
+
+基于Redis实现的异步阻塞队列存在jvm内存溢出问题，基于此实现了消息队列。
+
+> 消息队列：存储和管理消息，称为消息代理（message broker）
+> 
+> 生产者:发送消息到消息队列
+> 
+> 消费者：从消息队列中获取消息并处理
+> 
+> ![img_34.png](img_34.png)
+> 
+
+#### 基于Redis-List结构来模拟消息队列
+BLpush+BRpop/BRpush+BLpop
+
+独立于JVM，不依赖于机器，具备数据持久化，满足消息的有序性。
+无法避免消息丢失，只支持单消费者。
+
+#### 基于PubSub的消息队列
+发布-订阅模式
+
+支持多生产和多消费：publish subscribe，psubscribe匹配使用正则表达式
+
+不支持消息持久化，无法避免消息丢失（当客户端宕机时，不接受消息，消息将会丢失），消息堆积有上限。
+
+#### 基于Stream的消息队列。基于Redis-5.0实现
+XADD key [队列是否创建] [消息队列最大上限] [ID] [filed] [value]
+XREAD [count] [block sec] streams [key] [id]
+xgroup creat key groupName ID 
+消息可回溯，可阻塞读取，可被多个消费者读取，有漏读的风险
+单词：pending:待定
+
+![img_35.png](img_35.png)
+
+![img_36.png](img_36.png)
+
+![img_37.png](img_37.png)

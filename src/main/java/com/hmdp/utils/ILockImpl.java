@@ -1,13 +1,10 @@
 package com.hmdp.utils;
 
 import cn.hutool.core.lang.UUID;
-import cn.hutool.core.util.NumberUtil;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
-import org.springframework.data.redis.core.script.RedisScript;
 
-import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 

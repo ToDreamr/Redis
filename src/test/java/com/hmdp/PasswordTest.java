@@ -30,16 +30,4 @@ public class PasswordTest {
         System.out.println(Arrays.toString(password.getBytes(StandardCharsets.UTF_8)));
         System.out.println(md5DigestAsHex);
     }
-    @Test
-    void Bytes() throws IOException {
-        var sum=0;
-        var sum2=0;
-        var bytes= Files.readAllBytes(Paths.get("D:\\JavaWork\\hm-dianping\\src\\main\\resources\\application.yml"));
-        for (Byte b:bytes) {
-            sum+=b.intValue()&0xFF;
-            sum2+=b;
-        }
-        System.out.println(sum);
-        System.out.println(sum2);
-    }
 }
