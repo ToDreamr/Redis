@@ -20,6 +20,7 @@ public class LoginInterceptor implements HandlerInterceptor {
     public boolean preHandle(@Nullable HttpServletRequest request, @Nullable HttpServletResponse response,@Nullable Object handler) throws Exception {
        //判断是否存在
         if(UserHolder.getUser()==null){
+            assert response != null;
             response.setStatus(401);
             return false;
         }

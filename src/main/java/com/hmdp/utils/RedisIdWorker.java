@@ -3,6 +3,7 @@ package com.hmdp.utils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -18,7 +19,7 @@ public class RedisIdWorker {
      */
     private static final int COUNT_BITS = 32;//向左移动32位
 
-    private StringRedisTemplate stringRedisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
 
     public RedisIdWorker(StringRedisTemplate stringRedisTemplate) {
         this.stringRedisTemplate = stringRedisTemplate;
@@ -42,8 +43,9 @@ public class RedisIdWorker {
     }
 
     public static void main(String[] args) {
-        LocalDateTime of = LocalDateTime.of(2023, 7, 25, 10, 25);
+        LocalDateTime of = LocalDateTime.of(2023, 8, 22, 10, 25);
         long second = of.toEpochSecond(ZoneOffset.UTC);
         System.out.println(second);
     }
+
 }

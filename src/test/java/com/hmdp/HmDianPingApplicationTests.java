@@ -21,6 +21,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static com.hmdp.utils.RedisConstants.CACHE_SHOP_KEY;
@@ -60,9 +61,45 @@ class HmDianPingApplicationTests {
         }
         latch.await();
         long end = System.currentTimeMillis();
-        System.out.println("time = " + (end - begin));
+        System.out.println("time = " + (end - begin));//1496ms
     }
 
+    private int sum=0;
+    @Test
+    void CountDownLatchTest() throws InterruptedException {
+        Thread[] thread=new Thread[10000];
+        CountDownLatch latch=new CountDownLatch(thread.length);
+        List<Integer> list=new ArrayList<>();
+        long begin = System.currentTimeMillis();
+        ReentrantLock lock=new ReentrantLock();
+        for (int i = 0; i < thread.length; i++) {
+            thread[i]=new Thread(()->{
+                synchronized (lock){
+                    sum++;
+                }
+                latch.countDown();
+            });
+            list.add(sum);
+            thread[i].start();
+        }
+        latch.await();
+        long end = System.currentTimeMillis();
+        System.out.println("time = " + (end - begin));
+        System.out.println(sum);
+    }
+    @Test
+    void SingleSum(){
+        List<Integer> list=new ArrayList<>();
+        long begin = System.currentTimeMillis();
+            for (int i = 0; i < 30000; i++) {
+                long id=redisIdWorker.nextId("order");
+                System.out.println("id = " + id);
+
+            }
+        long end = System.currentTimeMillis();
+        System.out.println("time = " + (end - begin));
+        System.out.println(sum);
+    }
     @Test
     void testSaveShop() throws InterruptedException {
         Shop shop = shopService.getById(1L);
