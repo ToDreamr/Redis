@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.hmdp</groupId>
-    <artifactId>Redis_Boot</artifactId>
+    <artifactId>hmdp</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>Redis_Boot</name>
+    <name>hmdp</name>
     <description>Demo project for Spring Boot</description>
     <properties>
         <java.version>1.8</java.version>

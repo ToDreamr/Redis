@@ -21,8 +21,8 @@ spring:
     url: jdbc:mysql://localhost:3306/hmdp?useSSL=false&serverTimezone=UTC
 mybatis-plus:
   type-aliases-package: "com.org.entity"
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
       table-prefix: tb_

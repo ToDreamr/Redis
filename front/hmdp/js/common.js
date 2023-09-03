@@ -15,6 +15,7 @@ axios.interceptors.request.use(
     return Promise.reject(error)
   }
 )
+//只针对axios进行相应的安全校验，不是角色控制操作
 axios.interceptors.response.use(function (response) {
   // 判断执行结果
   if (!response.data.success) {

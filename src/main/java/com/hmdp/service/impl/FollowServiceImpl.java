@@ -37,7 +37,7 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
 
     @Override
     public Result follow(Long followUserId, Boolean isFollow) {
-        // 1.获取登录用户
+        // 1.获取登录用户，是当前的用户对博主进行关注
         Long userId = UserHolder.getUser().getId();
         String key = "follows:" + userId;
         // 1.判断到底是关注还是取关
@@ -46,14 +46,14 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
             Follow follow = new Follow();
             follow.setUserId(userId);
             follow.setFollowUserId(followUserId);
-            boolean isSuccess = save(follow);
+            boolean isSuccess = save(follow);//数据库修改成功才进行redis的操作
             if (isSuccess) {
                 // 把关注用户的id，放入redis的set集合 sadd userId followerUserId
                 stringRedisTemplate.opsForSet().add(key, followUserId.toString());
             }
         } else {
             // 3.取关，删除 delete from tb_follow where user_id = ? and follow_user_id = ?
-            //sql语句含有两个关联参数:一个是博主ID,一个是粉丝ID,两个变量在设计表的时候需要 考虑到位
+            // sql语句含有两个关联参数:一个是博主ID,一个是粉丝ID,两个变量在设计表的时候需要考虑到位
             boolean isSuccess = remove(new QueryWrapper<Follow>()
                     .eq("user_id", userId).eq("follow_user_id", followUserId));
             if (isSuccess) {
@@ -69,11 +69,17 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
         // 1.获取登录用户
         Long userId = UserHolder.getUser().getId();
         // 2.查询是否关注 select count(*) from tb_follow where user_id = ? and follow_user_id = ?
+        //数量选择count，单个数据选择one
         Integer count = query().eq("user_id", userId).eq("follow_user_id", followUserId).count();
         // 3.判断
         return Result.ok(count > 0);
     }
 
+    /**
+     * 共同关注功能实现，利用Redis的交集功能
+     * @param id
+     * @return
+     */
     @Override
     public Result followCommons(Long id) {
         // 1.获取当前用户
@@ -82,12 +88,13 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
         // 2.求交集
         //体现redis的优点的时候到了，直接取交集即可
         String key2 = "follows:" + id;
-        Set<String> intersect = stringRedisTemplate.opsForSet().intersect(key, key2);
+        Set<String> intersect = stringRedisTemplate.opsForSet().intersect(key, key2);//intersect求取交集部分，返回值为set
         if (intersect == null || intersect.isEmpty()) {
             // 无交集
             return Result.ok(Collections.emptyList());
         }
         // 3.解析id集合
+        //利用Sream流的map映射来解析交集部分的id采集为用户id集合
         List<Long> ids = intersect.stream().map(Long::valueOf).collect(Collectors.toList());
         // 4.查询用户
         List<UserDTO> users = userService.listByIds(ids)

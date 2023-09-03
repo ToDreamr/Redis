@@ -272,6 +272,8 @@ OK
 
 ### 用Lua脚本来解决原子性问题
 
+利用看门狗解决锁超时释放的问题
+
 ![img_25.png](md/img_25.png)
 
 ![img_26.png](md/img_26.png)
@@ -371,7 +373,42 @@ xgroup create/destory/delconsumer key groupName ID ["mkstream"]
 
 消费者组的名称一般企业环境下都是写在yml文件里面
 
-![img.png](img.png)
+![img.png](md/消息队列.png)
 
 ### 三种消息队列List PubSub Stream 解决方案的区别
-![img_1.png](img_1.png)
+![img_1.png](md/消息队列模式.png)
+
+## 发布达人探店
+对两张表去进行表的设计：
+
+利用Zsort来作为点赞和排行榜数据结构
+相关命令：zadd member score ,zscore member，zrange key from to
+
+## 关注推送，Feed流，提供沉浸式体验
+
+>
+> 常见的两种实现模式：
+> 
+> timeline：核心需要带上时间戳，不做内容筛选，信息全面，实现相对简单，但是信息噪音比较多
+> 
+> 实现方式：拉模式，推模式，推拉结合
+> 
+> 拉模式（读扩散）：缺点是延迟高
+> 
+> ![img_2.png](md/推模式.png)
+> 
+> 推模式
+> 
+> ![img_3.png](md/拉模式.png)
+> 
+> 推拉结合：
+> ![img.png](md/推拉结合模式.png)
+> 
+> 收件箱使用redis来实现，查询redis查询收件箱数据时需要实现分页查询，list，soretedset，数据的角标会发生变换，按照传统的分页方案将会出现错误
+> 
+> ![img_1.png](md/feed分页问题.png)
+> 
+> ![img_2.png](md/滚动分页.png)
+> 
+> 智能排序：针对用户使用习惯做一些算法，尽量接近用户使用习惯，但当用户习惯与算法不对称时，将会出现反作用
+

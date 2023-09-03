@@ -56,6 +56,11 @@ public class BlogController {
         return blogService.queryHotBlog(current);
     }
 
+    /**
+     * 根据blog -id来获取blog
+     * @param id
+     * @return
+     */
     @GetMapping("/{id}")
     public Result queryBlogById(@PathVariable("id") Long id) {
         return blogService.queryBlogById(id);
