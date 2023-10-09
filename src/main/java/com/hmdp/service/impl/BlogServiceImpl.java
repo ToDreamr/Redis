@@ -170,6 +170,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         return Result.ok(blog.getId());
     }
 
+    //采用滚动查询方法来查询所有的博客内容
     @Override
     public Result queryBlogOfFollow(Long max, Integer offset) {
         // 1.获取当前用户

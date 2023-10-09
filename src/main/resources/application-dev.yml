@@ -18,7 +18,8 @@ spring:
     driver-class-name: com.mysql.jdbc.Driver
     username: root
     password: 123456
-    url: jdbc:mysql://localhost:3306/hmdp?useSSL=false&serverTimezone=UTC
+#需要配置插入的文字的编码配置
+    url: jdbc:mysql://localhost:3306/hmdp?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8
 mybatis-plus:
   type-aliases-package: "com.org.entity"
 #  configuration:

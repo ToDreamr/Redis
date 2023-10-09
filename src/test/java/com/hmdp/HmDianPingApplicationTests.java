@@ -1,8 +1,5 @@
 package com.hmdp;
 
-import cn.hutool.json.JSON;
-import cn.hutool.json.JSONObject;
-import com.fasterxml.jackson.core.JsonParser;
 import com.hmdp.entity.Shop;
 import com.hmdp.service.impl.ShopServiceImpl;
 import com.hmdp.utils.CacheClient;
@@ -28,7 +25,7 @@ import static com.hmdp.utils.RedisConstants.CACHE_SHOP_KEY;
 import static com.hmdp.utils.RedisConstants.SHOP_GEO_KEY;
 
 @SpringBootTest
-class HmDianPingApplicationTests {
+public class HmDianPingApplicationTests {
 
     @Resource
     private CacheClient cacheClient;
