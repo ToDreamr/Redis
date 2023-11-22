@@ -1,5 +1,6 @@
-package com.hmdp.utils;
+package com.hmdp.utils.interceptor;
 
+import com.hmdp.utils.UserHolder;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
 import reactor.util.annotation.Nullable;

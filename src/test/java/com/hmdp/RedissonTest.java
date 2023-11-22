@@ -63,18 +63,4 @@ class RedissonTest {
             lock.unlock();
         }
     }
-
-    @Test
-    void mybatis() throws Exception{
-        DriverManager.setLogWriter(new PrintWriter(System.out));
-         try(Connection root = GetSqlSession.getConnection("jdbc:mysql://localhost:3306/hmdp?useSSL=false&serverTimezone=UTC","root",
-                     "123456");
-             Statement statement= root.createStatement();
-         ){
-             ResultSet set= statement.executeQuery("select * from hmdp.tb_user where phone like '14%'");
-             while (set.next()){
-                 System.out.println(set.getString(1));
-             }
-         }
-    }
 }
